@@ -1,0 +1,277 @@
+<ScreenManagement>:
+    id: screen_manager
+    GdaxApiScreen:
+        id: gdax_api_screen
+        name: 'GdaxApiScreen'
+        manager: 'screen_manager'
+    CoinbaseApiScreen:
+        id: coinbase_api_screen
+        name: 'CoinbaseApiScreen'
+        manager: 'screen_manager'
+        gdax_rv: gdax_api_screen.ids.rv.data
+    GdaxCurrencyScreen:
+        id: gdax_currency_screen
+        name: 'GdaxCurrencyScreen'
+        manager: 'screen_manager'
+    GdaxTradeScreen:
+        id: gdax_trade_screen
+        name: 'GdaxTradeScreen'
+        manager: 'screen_manager'
+    GdaxTradeConfirmationScreen:
+        id: gdax_trade_confirmation_screen
+        name: 'GdaxTradeConfirmationScreen'
+        manager: 'screen_manager'
+        gdax_confirm: gdax_trade_screen.trade_config
+
+<RecycleBoxLayout>:
+    default_size: None, dp(300)
+    default_size_hint: 1, None
+    size_hint_y: None
+    height: self.minimum_height
+    orientation: 'vertical'
+    spacing: '1dp'
+
+<RV>:
+    viewclass: 'Label'
+    RecycleBoxLayout:
+
+<GdaxApiScreen>:
+    text_gdax_key: gkey
+    text_gdax_secret: gsecret
+    text_gdax_passphrase: gpassphrase
+    recycle_view: rv
+
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'top'
+
+        BoxLayout:
+            size_hint_y: .25
+            size_hint_x: .8
+            orientation: 'vertical'
+            padding: 20, 20, 20, 20
+            cols: 2
+            password_mask: "*"
+
+            BoxLayout:
+                Label:
+                    text: "GDAX Key"
+                TextInput:
+                    id: gkey
+                    multiline: False
+                    write_tab: False
+            BoxLayout:
+                Label:
+                    text: "GDAX Secret"
+                TextInput:
+                    id: gsecret
+                    multiline: False
+                    write_tab: False
+                    password: True
+            BoxLayout:
+                Label:
+                    text: "GDAX Passphrase"
+                TextInput:
+                    id: gpassphrase
+                    multiline: False
+                    write_tab: False
+                    password: True
+            BoxLayout:
+                Button:
+                    text: "Test"
+                    on_release: root.fetch_data_from_gdax()
+
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'center'
+        ScrollView:
+            size_hint_y: None
+            size_hint_x: .9
+            height: '300dp'
+            RV:
+                id: rv
+
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'bottom'
+        BoxLayout:
+            size_hint_y: .15
+            size_hint_x: .8
+            orientation: 'horizontal'
+            padding: 20, 20, 20, 20
+            cols: 2
+            password_mask: "*"
+            Button:
+                text: "Confirm\nConfigure Coinbase"
+                on_release:
+                    app.root.transition.direction = 'left'
+                    app.root.current = 'CoinbaseApiScreen'
+            Button:
+                text: "Clear All"
+                on_release:
+                    root.remove_rv_and_input_text()
+
+<CoinbaseApiScreen>:
+    text_coinbase_key: ckey
+    text_coinbase_secret: csecret
+    recycle_view_gdax: rvg
+    recycle_view_coinbase: rvc
+
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'top'
+
+        BoxLayout:
+            size_hint_y: .25
+            size_hint_x: .8
+            orientation: 'vertical'
+            padding: 20, 20, 20, 20
+            cols: 2
+            password_mask: "*"
+
+            BoxLayout:
+                Label:
+                    text: "Coinbase Key"
+                TextInput:
+                    id: ckey
+                    multiline: False
+                    write_tab: False
+            BoxLayout:
+                Label:
+                    text: "Coinbase Secret"
+                TextInput:
+                    id: csecret
+                    multiline: False
+                    write_tab: False
+                    password: True
+            BoxLayout:
+                Button:
+                    text: "Test"
+                    on_release: root.fetch_data_from_coinbase()
+
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'center'
+        ScrollView:
+            size_hint_y: None
+            size_hint_x: .8
+            height: '300dp'
+            BoxLayout:
+                orientation: 'horizontal'
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        size_hint_y: .1
+                        text: 'GDAX Account Info'
+                        color: 42/255, 213/255, 239/255, 1
+                    RV:
+                        size_hint_y: .9
+                        id: rvg
+                        data: root.gdax_rv
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        size_hint_y: .1
+                        height: .25
+                        text: 'Coinbase Account Info'
+                        color: 42/255, 213/255, 239/255, 1
+                        canvas.before:
+                            Color:
+                                rgb: 0, 0, 0 #42/255, 213/255, 239/255
+                            Rectangle:
+                                pos: self.pos
+                                size: self.size
+                    RV:
+                        size_hint_y: .9
+                        id: rvc
+
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'bottom'
+        BoxLayout:
+            size_hint_y: .15
+            size_hint_x: .8
+            orientation: 'horizontal'
+            padding: 20, 20, 20, 20
+            cols: 2
+            password_mask: "*"
+            Button:
+                text: "Confirm"
+                on_release:
+                    app.root.transition.direction = 'left'
+                    app.root.current = 'GdaxCurrencyScreen'
+            Button:
+                text: "Clear All"
+                on_release: root.remove_rv_and_input_text()
+
+<GdaxCurrencyViewClass>:
+    Button:
+        text: root.text
+        on_release:
+            root.set_trade_symbol(self.text)
+            app.root.ids.gdax_trade_screen.ids.trade_symbol.text = self.text
+            app.root.transition.direction = 'left'
+            app.root.current = 'GdaxTradeScreen'
+
+<GdaxCurrencyScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            size_hint_y: .15
+            text: "Select the currency you\nwant to Dollar Cost Average."
+        GdaxCurrencyRecycleView:
+            id: gdax_currency_rv
+            viewclass: 'GdaxCurrencyViewClass'
+            RecycleBoxLayout:
+                orientation: 'vertical'
+                default_size: None, dp(56)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+
+<GdaxTradeViewClass>:
+    cols: 2
+    Button:
+        text: root.text
+        on_release:
+            root.set_trade_details(self.text)
+            app.root.transition.direction = 'left'
+            app.root.current = 'GdaxTradeConfirmationScreen'
+
+<GdaxTradeScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            size_hint_y: .1
+            id: trade_symbol
+        Label:
+            size_hint_y: .1
+            text: "How much do you want to trade per day?"
+        BoxLayout:
+            size_hint_y: .1
+            orientation: 'horizontal'
+            FloatInput:
+                id: trade_day_amount
+                multiline: False
+                write_tab: False
+            Button:
+                text: "Show DCA Options"
+                on_press: root.generate_investment_options(root.ids.trade_day_amount.text)
+        GdaxTradeRecycleView:
+            id: gdax_trade_rv
+            viewclass: 'GdaxTradeViewClass'
+            RecycleGridLayout:
+                cols: 2
+                orientation: 'vertical'
+                default_size: None, dp(56)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+
+<GdaxTradeConfirmationScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        Label:
+            id: gdax_trade_confirmation_label
+        Label:
+            id: gdax_order_label
